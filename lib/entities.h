@@ -9,18 +9,12 @@ typedef struct Gun {
   short ammo;
 } Gun;
 
-typedef struct Shooter {
-  int   index;
-  char  name[15];
-  void  (*atira)(Gun *gun);
-} Shooter;
-
 typedef struct Spaceship {
   int       index;
   char      name[20];
-  Shooter   shooters[4];
-  Gun       guns[4];
+  Gun       *guns;
   Assistant assistant;
 } Spaceship;
 
-void atira(Gun *gun);
+void shoot(Gun *gun);
+void create_spaceship(Spaceship *spaceship, Gun *guns, Assistant *assistant, int index, char name[20], char assistant_name[15]);

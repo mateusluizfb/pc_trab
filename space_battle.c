@@ -3,35 +3,23 @@
 #include "./lib/entities.h"
 
 void main() {
+  Spaceship spaceship_a;
+  Assistant assistant_a;
+  Gun guns_a[4];
+  for (int i = 0; i < 4; i++) {
+    Gun gun;
+    guns_a[i] = gun;
+  }
+  create_spaceship(&spaceship_a, guns_a, &assistant_a, 1, "Nave A", "Assistente A");
 
-  Assistant assistant;
-  assistant.index = 1;
-  strcpy(assistant.name, "Ajudante Joao");
-  assistant.ammo = 2;
+  Spaceship spaceship_b;
+  Assistant assistant_b;
+  Gun guns_b[4];
+  for (int i = 0; i < 4; i++) {
+    Gun gun;
+    guns_b[i] = gun;
+  }
+  create_spaceship(&spaceship_b, guns_b, &assistant_b, 1, "Nave B", "Assistente B");
 
-  printf("%d\n", assistant.index);
-  printf("%s\n", assistant.name);
-  printf("%d\n", assistant.ammo);
-
-  Gun gun;
-  gun.index = 10;
-  gun.ammo = 5;
-
-  Shooter shooter;
-  shooter.index = 2;
-  strcpy(shooter.name, "Atirador Marcos");
-  shooter.atira = atira;
-  shooter.atira(&gun);
-
-  Spaceship spaceship;
-  spaceship.index = 1;
-  strcpy(spaceship.name, "Nave A");
-  Shooter shooter_array[4];
-  shooter_array[0] = shooter;
-  Gun gun_array[4];
-  gun_array[0] = gun;
-  memcpy(spaceship.shooters, shooter_array, sizeof shooter_array);
-  memcpy(spaceship.guns, gun_array, sizeof gun_array);
-  spaceship.assistant = assistant;
-
+  
 }
