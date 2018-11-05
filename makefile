@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS =
-LINKFLAGS = -lm
+LINKFLAGS = -lm -lpthread
 OUTFILE = space_battle
 OBJS = space_battle.o entities.o
 SRCS = space_battle.c ./lib/entities.c
