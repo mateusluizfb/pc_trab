@@ -3,8 +3,8 @@
 #include "entities.h"
 
 void shoot(Gun *gun) {
-  printf("atirei \n");
   (*gun).ammo--;
+  printf("Arma %d atirou, sobraram %d balas de canhão.\n", (*gun).index, (*gun).ammo);
 }
 
 void create_guns(Gun *guns, int quantity) {
@@ -28,4 +28,6 @@ void create_spaceship(Spaceship *spaceship, Gun *guns, Assistant *assistant, int
 
   create_assistant(assistant, index, assistant_name);
   (*spaceship).assistant = *assistant;
+
+  (*spaceship).life = 50; 
 }

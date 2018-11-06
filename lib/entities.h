@@ -12,6 +12,7 @@ typedef struct Gun {
 typedef struct Spaceship {
   int       index;
   char      name[20];
+  int       life;
   Gun       *guns;
   Assistant assistant;
 } Spaceship;
