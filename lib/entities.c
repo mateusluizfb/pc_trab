@@ -29,5 +29,5 @@ void create_spaceship(Spaceship *spaceship, Gun *guns, Assistant *assistant, int
   create_assistant(assistant, index, assistant_name);
   (*spaceship).assistant = *assistant;
 
-  (*spaceship).life = 50; 
+  (*spaceship).life = 160; 
 }

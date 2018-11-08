@@ -6,6 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <signal.h>
+#include <semaphore.h>
 
 Spaceship spaceship_a;
 Assistant assistant_a;
@@ -21,12 +22,20 @@ pthread_mutex_t lock_spaceship_a;
 pthread_mutex_t lock_spaceship_b;
 pthread_mutex_t lock_game_over;
 
+pthread_mutex_t sem_assistente_a;
+pthread_mutex_t sem_assistente_b;
+
 pthread_t thread_spaceships_guns[8];
 pthread_t thread_assistants[2];
 
 int shoot_time() {
   srand(time(NULL));
   return ( rand() % 3 ) + 1;
+}
+
+int assistant_time() {
+  srand(time(NULL));
+  return ( rand() % 2 ) + 1;
 }
 
 void game_over() {
@@ -44,21 +53,47 @@ void game_over() {
   }
 }
 
+void assistant_a_work(Gun *gun) {
+  pthread_mutex_lock(&sem_assistente_a);
+  (*gun).ammo = 4;
+  printf("\n");
+  printf("Assistente Nave A - Arma %d sem munição, indo buscar balas de canhão\n", (*gun).index);
+  printf("   ⚆ _ ⚆             >=>     \n");
+  printf("                   >=>>=>    \n");
+  sleep(assistant_time());
+  printf("\n");
+  printf("Assistente Nave A - Arma %d carregada!!!  ̿ ̿ ̿'̿'\\̵͇̿̿\\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ \n", (*gun).index);
+  pthread_mutex_unlock(&sem_assistente_a);
+}
+
+void * assistant_b_work(Gun *gun) {
+  pthread_mutex_lock(&sem_assistente_b);
+  (*gun).ammo = 4;
+  printf("\n");
+  printf("Assistente Nave B - Arma %d sem munição, indo buscar balas de canhão\n", (*gun).index);
+  printf("   ⚆ _ ⚆             >=>     \n");
+  printf("                   >=>>=>    \n");
+  sleep(assistant_time());
+  printf("\n");
+  printf("Assistente Nave B - Arma %d carregada!!! ̿ ̿ ̿'̿'\\̵͇̿̿\\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ \n", (*gun).index);
+  pthread_mutex_unlock(&sem_assistente_b);
+}
+
 void * spaceship_a_attack(void * args) {
   int gun_arr_index = *((int *) args);
   while(1) {
+    if (guns_a[gun_arr_index].ammo <= 0) {
+      assistant_a_work(&guns_a[gun_arr_index]);
+    }
     guns_a[gun_arr_index].ammo--;
     sleep(shoot_time());
 
     pthread_mutex_lock(&lock_spaceship_b);
 
-      printf("Nave A - Arma %d atirou, sobraram %d balas de canhão.\n", guns_a[gun_arr_index].index, guns_a[gun_arr_index].ammo);
-      printf("\n");
-      printf("    / \\                     / \\     \n");
-      printf("   |   |                   |   |      \n");
-      printf("   | A |     === }=>       | B |      \n");
-      printf("  /     \\                 /     \\   \n");
-      printf("  VvVvVvV                 VvVvVVV     \n");
+      printf("\nNave A - Arma %d atirou, sobraram %d balas de canhão.\n", guns_a[gun_arr_index].index, guns_a[gun_arr_index].ammo);
+      printf("   /\\                    /\\     \n");
+      printf("  |A |      ===}=>      |B |     \n");
+      printf("  VvvV                  VvvV     \n");
       printf("\n");
 
       if (spaceship_b.life <= 0) {
@@ -71,7 +106,11 @@ void * spaceship_a_attack(void * args) {
         pthread_mutex_unlock(&lock_game_over);
       } else {
         spaceship_b.life -= 4;
-        printf("NAVE B - HP: %d\n", spaceship_b.life);
+        if (spaceship_b.life < 4) {
+          printf("NAVE B - HP: 0\n");
+        } else {
+          printf("NAVE B - HP: %d\n", spaceship_b.life);
+        }
       }
     pthread_mutex_unlock(&lock_spaceship_b);
   }
@@ -80,18 +119,18 @@ void * spaceship_a_attack(void * args) {
 void * spaceship_b_attack(void * args) {
   int gun_arr_index = *((int *) args);
   while(1) {
+    if (guns_b[gun_arr_index].ammo <= 0) {
+      assistant_b_work(&guns_b[gun_arr_index]);
+    }
     guns_b[gun_arr_index].ammo--;
     sleep(shoot_time());
 
     pthread_mutex_lock(&lock_spaceship_a);
 
-      printf("Nave B -- Arma %d atirou, sobraram %d balas de canhão.\n", guns_b[gun_arr_index].index, guns_b[gun_arr_index].ammo);
-      printf("\n");
-      printf("    / \\                     / \\    \n");
-      printf("   |   |                   |   |     \n");
-      printf("   | A |      <={ ===      | B |     \n");
-      printf("  /     \\                 /     \\  \n");
-      printf("  VvVvVvV                 VvVvVVV    \n");
+      printf("\nNave B -- Arma %d atirou, sobraram %d balas de canhão.\n", guns_b[gun_arr_index].index, guns_b[gun_arr_index].ammo);
+      printf("   /\\                    /\\     \n");
+      printf("  |A |      <={ ===     |B |     \n");
+      printf("  VvvV                  VvvV     \n");
       printf("\n");
 
       if (spaceship_a.life <= 0) {
@@ -104,17 +143,14 @@ void * spaceship_b_attack(void * args) {
         pthread_mutex_unlock(&lock_game_over);
       } else {
         spaceship_a.life -= 4;
-        printf("NAVE A - HP: %d\n", spaceship_a.life);
+        if (spaceship_a.life < 4) {
+          printf("NAVE A - HP: 0\n");
+        } else {
+          printf("NAVE A - HP: %d\n", spaceship_a.life);
+        }
       }
     pthread_mutex_unlock(&lock_spaceship_a);
   }
-}
-
-void * assistant_a_work(/* arguments */) {
-}
-
-void * assistant_b_work(/* arguments */) {
-  /* code */
 }
 
 void main() {
@@ -139,11 +175,14 @@ void main() {
     *gun_arr_index = i;
     pthread_create(&thread_spaceships_guns[i], NULL, spaceship_b_attack, (void *) (gun_arr_index));
   }
-  pthread_create(&thread_assistants[0], NULL, assistant_a_work, NULL);
-  pthread_create(&thread_assistants[1], NULL, assistant_b_work, NULL);
+  // pthread_create(&thread_assistants[0], NULL, assistant_a_work, NULL);
+  // pthread_create(&thread_assistants[1], NULL, assistant_b_work, NULL);
+
+  // sem_init(&sem_assistente_a, 0, 1);
+
   for (size_t i = 0; i < 8; i++) {
     pthread_join(thread_spaceships_guns[i], NULL);
   }
-  pthread_join(thread_assistants[0], NULL);
-  pthread_join(thread_assistants[1], NULL);
+  // pthread_join(thread_assistants[0], NULL);
+  // pthread_join(thread_assistants[1], NULL);
 }
