@@ -28,15 +28,16 @@ pthread_mutex_t sem_assistente_b;
 pthread_t thread_spaceships_guns[8];
 pthread_t thread_assistants[2];
 
-int shoot_time() {
-  srand(time(NULL));
-  return ( rand() % 3 ) + 1;
-}
-
-int assistant_time() {
-  srand(time(NULL));
-  return ( rand() % 2 ) + 1;
-}
+// int shoot_time() {
+//   time_t t;
+//   srand((unsigned) time(&t));
+//   return rand() % 5;
+// }
+//
+// int assistant_time() {
+//
+//   return ( rand() % 5 ) + 1;
+// }
 
 void game_over() {
   printf("          _ ._  _ , _ ._       \n");
@@ -60,7 +61,7 @@ void assistant_a_work(Gun *gun) {
   printf("Assistente Nave A - Arma %d sem munição, indo buscar balas de canhão\n", (*gun).index);
   printf("   ⚆ _ ⚆             >=>     \n");
   printf("                   >=>>=>    \n");
-  sleep(assistant_time());
+  sleep(( rand() % 5 ) + 1);
   printf("\n");
   printf("Assistente Nave A - Arma %d carregada!!!  ̿ ̿ ̿'̿'\\̵͇̿̿\\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ \n", (*gun).index);
   pthread_mutex_unlock(&sem_assistente_a);
@@ -73,7 +74,7 @@ void * assistant_b_work(Gun *gun) {
   printf("Assistente Nave B - Arma %d sem munição, indo buscar balas de canhão\n", (*gun).index);
   printf("   ⚆ _ ⚆             >=>     \n");
   printf("                   >=>>=>    \n");
-  sleep(assistant_time());
+  sleep(( rand() % 5 ) + 1);
   printf("\n");
   printf("Assistente Nave B - Arma %d carregada!!! ̿ ̿ ̿'̿'\\̵͇̿̿\\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ \n", (*gun).index);
   pthread_mutex_unlock(&sem_assistente_b);
@@ -86,16 +87,18 @@ void * spaceship_a_attack(void * args) {
       assistant_a_work(&guns_a[gun_arr_index]);
     }
     guns_a[gun_arr_index].ammo--;
-    sleep(shoot_time());
+    sleep(( rand() % 5 ) + 1);
 
     pthread_mutex_lock(&lock_spaceship_b);
+      int dano = ( rand() % 5 ) + 1;
 
-      printf("\nNave A - Arma %d atirou, sobraram %d balas de canhão.\n", guns_a[gun_arr_index].index, guns_a[gun_arr_index].ammo);
+      printf("\nNave A - Arma %d atirou dando %d de dano, sobraram %d balas de canhão.\n", guns_a[gun_arr_index].index, dano, guns_a[gun_arr_index].ammo);
       printf("   /\\                    /\\     \n");
       printf("  |A |      ===}=>      |B |     \n");
       printf("  VvvV                  VvvV     \n");
       printf("\n");
 
+      spaceship_b.life -= dano;
       if (spaceship_b.life <= 0) {
         pthread_mutex_lock(&lock_game_over);
         if (!game_over_called) {
@@ -105,8 +108,7 @@ void * spaceship_a_attack(void * args) {
         }
         pthread_mutex_unlock(&lock_game_over);
       } else {
-        spaceship_b.life -= 4;
-        if (spaceship_b.life < 4) {
+        if (spaceship_b.life <= 0) {
           printf("NAVE B - HP: 0\n");
         } else {
           printf("NAVE B - HP: %d\n", spaceship_b.life);
@@ -123,16 +125,18 @@ void * spaceship_b_attack(void * args) {
       assistant_b_work(&guns_b[gun_arr_index]);
     }
     guns_b[gun_arr_index].ammo--;
-    sleep(shoot_time());
+    sleep(( rand() % 5 ) + 1);
 
     pthread_mutex_lock(&lock_spaceship_a);
 
-      printf("\nNave B -- Arma %d atirou, sobraram %d balas de canhão.\n", guns_b[gun_arr_index].index, guns_b[gun_arr_index].ammo);
+      int dano = ( rand() % 5 ) + 1;
+      printf("\nNave B -- Arma %d atirou dando %d de dano, sobraram %d balas de canhão.\n", guns_b[gun_arr_index].index, dano, guns_b[gun_arr_index].ammo);
       printf("   /\\                    /\\     \n");
-      printf("  |A |      <={ ===     |B |     \n");
+      printf("  |A |      <={===      |B |     \n");
       printf("  VvvV                  VvvV     \n");
       printf("\n");
 
+      spaceship_a.life -= dano;
       if (spaceship_a.life <= 0) {
         pthread_mutex_lock(&lock_game_over);
         if (!game_over_called) {
@@ -142,8 +146,7 @@ void * spaceship_b_attack(void * args) {
         }
         pthread_mutex_unlock(&lock_game_over);
       } else {
-        spaceship_a.life -= 4;
-        if (spaceship_a.life < 4) {
+        if (spaceship_a.life <= 0) {
           printf("NAVE A - HP: 0\n");
         } else {
           printf("NAVE A - HP: %d\n", spaceship_a.life);
@@ -154,6 +157,8 @@ void * spaceship_b_attack(void * args) {
 }
 
 void main() {
+  srand(time(NULL));
+
   for (int i = 0; i < 4; i++) {
     Gun gun;
     guns_a[i] = gun;
